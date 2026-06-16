@@ -1426,7 +1426,11 @@ impl<T: InvokeUiSession> Remote<T> {
                     self.handler.set_cursor_position(cp);
                 }
                 Some(message::Union::Clipboard(cb)) => {
-                    if !self.handler.lc.read().unwrap().disable_clipboard.v {
+                    let clipboard_allowed = {
+                        let lc = self.handler.lc.read().unwrap();
+                        !lc.disable_clipboard.v && !lc.view_only.v
+                    };
+                    if clipboard_allowed {
                         #[cfg(not(any(target_os = "android", target_os = "ios")))]
                         update_clipboard(vec![cb], ClipboardSide::Client);
                         #[cfg(target_os = "ios")]
@@ -1445,7 +1449,11 @@ impl<T: InvokeUiSession> Remote<T> {
                     }
                 }
                 Some(message::Union::MultiClipboards(_mcb)) => {
-                    if !self.handler.lc.read().unwrap().disable_clipboard.v {
+                    let clipboard_allowed = {
+                        let lc = self.handler.lc.read().unwrap();
+                        !lc.disable_clipboard.v && !lc.view_only.v
+                    };
+                    if clipboard_allowed {
                         #[cfg(not(any(target_os = "android", target_os = "ios")))]
                         update_clipboard(_mcb.clipboards, ClipboardSide::Client);
                         #[cfg(target_os = "ios")]
