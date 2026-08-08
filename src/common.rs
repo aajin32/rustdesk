@@ -121,7 +121,30 @@ impl Drop for SimpleCallOnReturn {
     }
 }
 
+// 自建服务器默认地址，未配置时客户端自动指向此处
+fn preset_custom_server() {
+    for (key, value) in preset_custom_server_values() {
+        if Config::get_option(key).is_empty() {
+            Config::set_option(key.to_owned(), value.to_owned());
+        }
+    }
+}
+
+// 返回自建服务器预设的键值对，供 preset_custom_server 写入
+fn preset_custom_server_values() -> Vec<(&'static str, String)> {
+    const CUSTOM_HOST: &str = "192.168.2.13";
+    vec![
+        (keys::OPTION_CUSTOM_RENDEZVOUS_SERVER, CUSTOM_HOST.to_owned()),
+        (keys::OPTION_RELAY_SERVER, CUSTOM_HOST.to_owned()),
+        (
+            keys::OPTION_API_SERVER,
+            format!("http://{}:21114", CUSTOM_HOST),
+        ),
+    ]
+}
+
 pub fn global_init() -> bool {
+    preset_custom_server();
     #[cfg(target_os = "linux")]
     {
         if !crate::platform::linux::is_x11() {
@@ -3158,5 +3181,23 @@ mod tests {
 
         LocalConfig::set_option("access_token".to_owned(), "".to_owned());
         LocalConfig::set_option("expires_at".to_owned(), "".to_owned());
+    }
+
+    #[test]
+    fn test_preset_custom_server_values() {
+        let values = preset_custom_server_values();
+        let map: HashMap<&str, String> = values.into_iter().collect();
+        assert_eq!(
+            map.get(keys::OPTION_CUSTOM_RENDEZVOUS_SERVER).map(String::as_str),
+            Some("192.168.2.13")
+        );
+        assert_eq!(
+            map.get(keys::OPTION_RELAY_SERVER).map(String::as_str),
+            Some("192.168.2.13")
+        );
+        assert_eq!(
+            map.get(keys::OPTION_API_SERVER).map(String::as_str),
+            Some("http://192.168.2.13:21114")
+        );
     }
 }
