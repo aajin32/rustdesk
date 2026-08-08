@@ -780,6 +780,10 @@ Future<bool?> _openLoginDialog() async {
                   key: 'access_token', value: resp.access_token!);
               await bind.mainSetLocalOption(
                   key: 'user_info', value: jsonEncode(resp.user ?? {}));
+              if (resp.expires_at != null) {
+                await bind.mainSetLocalOption(
+                    key: 'expires_at', value: '${resp.expires_at}');
+              }
             }
             if (close != null) {
               close(true);
@@ -1028,6 +1032,10 @@ Future<bool?> verificationCodeDialog(
             if (resp.access_token != null) {
               await bind.mainSetLocalOption(
                   key: 'access_token', value: resp.access_token!);
+              if (resp.expires_at != null) {
+                await bind.mainSetLocalOption(
+                    key: 'expires_at', value: '${resp.expires_at}');
+              }
               close(true);
               return;
             }

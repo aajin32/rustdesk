@@ -182,16 +182,23 @@ class LoginResponse {
   String? type;
   String? tfa_type;
   String? secret;
+  int? expires_at;
   UserPayload? user;
 
   LoginResponse(
-      {this.access_token, this.type, this.tfa_type, this.secret, this.user});
+      {this.access_token,
+      this.type,
+      this.tfa_type,
+      this.secret,
+      this.expires_at,
+      this.user});
 
   LoginResponse.fromJson(Map<String, dynamic> json) {
     access_token = json['access_token'];
     type = json['type'];
     tfa_type = json['tfa_type'];
     secret = json['secret'];
+    expires_at = json['expires_at'];
     user = json['user'] != null ? UserPayload.fromJson(json['user']) : null;
   }
 }

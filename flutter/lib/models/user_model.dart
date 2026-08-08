@@ -137,6 +137,7 @@ class UserModel {
 
   Future<void> reset({bool resetOther = false}) async {
     await bind.mainSetLocalOption(key: 'access_token', value: '');
+    await bind.mainSetLocalOption(key: 'expires_at', value: '');
     await bind.mainSetLocalOption(key: 'user_info', value: '');
     if (resetOther) {
       await gFFI.abModel.reset();

@@ -255,6 +255,9 @@ impl Client {
         if config::is_incoming_only() {
             bail!("Incoming only mode");
         }
+        if !crate::common::is_logged_in() {
+            bail!("Login required");
+        }
         // to-do: remember the port for each peer, so that we can retry easier
         if hbb_common::is_ip_str(peer) {
             return Ok((
@@ -489,6 +492,9 @@ impl Client {
                     Some(rendezvous_message::Union::PunchHoleResponse(ph)) => {
                         if ph.socket_addr.is_empty() {
                             if !ph.other_failure.is_empty() {
+                                if ph.other_failure == "session_required" {
+                                    crate::common::handle_session_required();
+                                }
                                 bail!(ph.other_failure);
                             }
                             match ph.failure.enum_value() {
@@ -890,6 +896,9 @@ impl Client {
             {
                 if let Some(rendezvous_message::Union::RelayResponse(rs)) = msg_in.union {
                     if !rs.refuse_reason.is_empty() {
+                        if rs.refuse_reason == "session_required" {
+                            crate::common::handle_session_required();
+                        }
                         bail!(rs.refuse_reason);
                     }
                     succeed = true;

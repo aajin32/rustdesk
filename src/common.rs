@@ -1115,6 +1115,36 @@ pub fn get_local_option(key: &str) -> String {
     v
 }
 
+// 登录态判定：token 存在且未过期（expires_at 为 unix 秒，登录成功时写入）
+pub fn is_logged_in() -> bool {
+    let token = get_local_option("access_token");
+    if token.is_empty() {
+        return false;
+    }
+    match get_local_option("expires_at").parse::<i64>() {
+        Ok(expires_at) => expires_at > now_secs(),
+        Err(_) => false,
+    }
+}
+
+// 当前 unix 秒
+pub fn now_secs() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
+}
+
+// 服务端拒绝出站（凭证失效/被吊销/登录删旧）→ 清本地凭证并重启注册，弹重新登录
+pub fn handle_session_required() {
+    LocalConfig::set_option("access_token".to_owned(), "".to_owned());
+    LocalConfig::set_option("expires_at".to_owned(), "".to_owned());
+    LocalConfig::set_option("user_info".to_owned(), "".to_owned());
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    crate::rendezvous_mediator::RendezvousMediator::restart();
+    log::warn!("session_required: 出站许可被拒绝，已清除登录态");
+}
+
 pub fn get_audit_server(api: String, custom: String, typ: String) -> String {
     let url = get_api_server(api, custom);
     if url.is_empty() || is_public(&url) {
@@ -3095,5 +3125,38 @@ mod tests {
         let combined_mask = MOUSE_TYPE_DOWN | ((MOUSE_BUTTON_LEFT | MOUSE_BUTTON_RIGHT) << 3);
         assert_eq!(combined_mask & MOUSE_TYPE_MASK, MOUSE_TYPE_DOWN);
         assert_eq!(combined_mask >> 3, MOUSE_BUTTON_LEFT | MOUSE_BUTTON_RIGHT);
+    }
+
+    #[test]
+    fn test_now_secs() {
+        let now = now_secs();
+        assert!(now > 1_700_000_000, "unix 秒应大于 2023-11 时间戳");
+    }
+
+    #[test]
+    fn test_is_logged_in() {
+        // 无 token → 未登录
+        LocalConfig::set_option("access_token".to_owned(), "".to_owned());
+        LocalConfig::set_option("expires_at".to_owned(), "".to_owned());
+        assert!(!is_logged_in());
+
+        // token 存在但 expires_at 过期 → 未登录
+        LocalConfig::set_option("access_token".to_owned(), "fake-token".to_owned());
+        LocalConfig::set_option("expires_at".to_owned(), "1".to_owned());
+        assert!(!is_logged_in());
+
+        // token 存在且未过期 → 已登录
+        LocalConfig::set_option(
+            "expires_at".to_owned(),
+            (now_secs() + 3600).to_string(),
+        );
+        assert!(is_logged_in());
+
+        // expires_at 非数字 → 未登录（视为不可解析）
+        LocalConfig::set_option("expires_at".to_owned(), "not-a-number".to_owned());
+        assert!(!is_logged_in());
+
+        LocalConfig::set_option("access_token".to_owned(), "".to_owned());
+        LocalConfig::set_option("expires_at".to_owned(), "".to_owned());
     }
 }

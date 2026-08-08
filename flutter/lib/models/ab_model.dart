@@ -1030,7 +1030,14 @@ class LegacyAb extends BaseAb {
             licensedDevices = json['licensed_devices'];
             // ignore: empty_catches
           } catch (e) {}
-          final data = jsonDecode(json['data']);
+          // 新契约：data 为数组，取首个元素（单条地址簿记录）
+          final raw = json['data'];
+          dynamic data;
+          if (raw is List) {
+            data = raw.isEmpty ? null : raw[0];
+          } else {
+            data = raw;
+          }
           if (data != null) {
             _deserialize(data);
           }
@@ -1064,7 +1071,7 @@ class LegacyAb extends BaseAb {
       final api = "${await bind.mainGetApiServer()}/api/ab";
       var authHeaders = getHttpHeaders();
       authHeaders['Content-Type'] = "application/json";
-      final body = jsonEncode({"data": jsonEncode(_serialize())});
+      final body = jsonEncode({"data": [_serialize()]});
       http.Response resp =
           await http.post(Uri.parse(api), headers: authHeaders, body: body);
       if (resp.statusCode == 200 &&

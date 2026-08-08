@@ -1245,6 +1245,11 @@ pub fn main_set_local_option(key: String, value: String) {
             session.update_supported_decodings();
         }
     }
+    // 登录态变化（写入/清除 access_token）→ 重注册，使 hbbs 感知新的出站凭证
+    if key.eq("access_token") || key.eq("expires_at") {
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        crate::rendezvous_mediator::RendezvousMediator::restart();
+    }
 }
 
 // We do use use `main_get_local_option` and `main_set_local_option`.
@@ -2466,6 +2471,20 @@ pub fn main_support_remove_wallpaper() -> bool {
 
 pub fn is_incoming_only() -> SyncReturn<bool> {
     SyncReturn(config::is_incoming_only())
+}
+
+// 登录态：token 存在且未过期（Flutter 侧判断是否已登录）
+pub fn main_is_logged_in() -> SyncReturn<bool> {
+    SyncReturn(crate::common::is_logged_in())
+}
+
+// 清除账户凭证（不联动 incoming-only）
+pub fn main_clear_account() {
+    crate::ui_interface::set_local_option("access_token".to_owned(), "".to_owned());
+    crate::ui_interface::set_local_option("expires_at".to_owned(), "".to_owned());
+    crate::ui_interface::set_local_option("user_info".to_owned(), "".to_owned());
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    crate::rendezvous_mediator::RendezvousMediator::restart();
 }
 
 pub fn is_outgoing_only() -> SyncReturn<bool> {

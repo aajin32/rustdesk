@@ -121,6 +121,8 @@ impl RendezvousMediator {
             }
         }
         crate::hbbs_http::sync::start();
+        #[cfg(not(any(target_os = "android", target_os = "ios")))]
+        crate::dynamic_config::start();
         #[cfg(target_os = "windows")]
         if crate::platform::is_installed() && crate::is_server() {
             crate::updater::start_auto_update();
@@ -816,6 +818,7 @@ impl RendezvousMediator {
         msg_out.set_register_peer(RegisterPeer {
             id,
             serial,
+            outbound_token: crate::get_local_option("access_token"),
             ..Default::default()
         });
         socket.send(&msg_out).await?;

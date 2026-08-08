@@ -46,6 +46,9 @@ mod lang;
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 mod port_forward;
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+mod dynamic_config;
+
 #[cfg(all(feature = "flutter", feature = "plugin_framework"))]
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 pub mod plugin;
