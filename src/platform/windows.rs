@@ -1246,8 +1246,8 @@ pub fn portable_service_logon_helper_paths() -> Option<(PathBuf, PathBuf)> {
         .home_dir()
         .join("AppData")
         .join("Local")
-        .join("rustdesk-sciter");
-    let dst = dir.join("rustdesk.exe");
+        .join("yqDesk-sciter");
+    let dst = dir.join("yqDesk.exe");
     Some((dir, dst))
 }
 
