@@ -123,9 +123,18 @@ impl Drop for SimpleCallOnReturn {
 
 // 自建服务器默认地址，启动时强制覆盖为自建服务器，忽略旧配置
 fn preset_custom_server() {
-    for (key, value) in preset_custom_server_values() {
-        Config::set_option(key.to_owned(), value.to_owned());
+    let values = preset_custom_server_values();
+    let mut overwrite = config::OVERWRITE_SETTINGS.write().unwrap();
+    for (key, value) in &values {
+        overwrite.insert(key.to_string(), value.clone());
+        Config::set_option(key.to_string(), value.clone());
     }
+    drop(overwrite);
+    // 固定服务器相关选项并隐藏网络设置界面，禁止用户修改
+    let mut buildin = config::BUILTIN_SETTINGS.write().unwrap();
+    buildin.insert(keys::OPTION_HIDE_SERVER_SETTINGS.to_owned(), "Y".to_owned());
+    buildin.insert(keys::OPTION_HIDE_PROXY_SETTINGS.to_owned(), "Y".to_owned());
+    buildin.insert(keys::OPTION_HIDE_WEBSOCKET_SETTINGS.to_owned(), "Y".to_owned());
 }
 
 // 返回自建服务器预设的键值对，供 preset_custom_server 写入
