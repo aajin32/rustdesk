@@ -121,12 +121,10 @@ impl Drop for SimpleCallOnReturn {
     }
 }
 
-// 自建服务器默认地址，未配置时客户端自动指向此处
+// 自建服务器默认地址，启动时强制覆盖为自建服务器，忽略旧配置
 fn preset_custom_server() {
     for (key, value) in preset_custom_server_values() {
-        if Config::get_option(key).is_empty() {
-            Config::set_option(key.to_owned(), value.to_owned());
-        }
+        Config::set_option(key.to_owned(), value.to_owned());
     }
 }
 
