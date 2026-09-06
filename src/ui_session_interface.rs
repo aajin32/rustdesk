@@ -1294,7 +1294,13 @@ impl<T: InvokeUiSession> Session<T> {
 
         // override only if true
         if true == force_relay {
-            self.lc.write().unwrap().force_relay = true;
+            let mut lc = self.lc.write().unwrap();
+            lc.force_relay = true;
+            // An explicit retry-via-relay is a decision about this peer, not transport
+            // necessity: Relay-only ICE for this round like any force-always-relay session,
+            // and it is the one kind of relay that belongs in the peer's saved config.
+            lc.policy_relay = true;
+            lc.peer_relay = true;
         }
         self.lc.write().unwrap().peer_info = None;
         self.reconnect_count.fetch_add(1, Ordering::SeqCst);
@@ -1944,6 +1950,7 @@ pub async fn io_loop<T: InvokeUiSession>(handler: Session<T>, round: u32) {
     let key = crate::get_key(false).await;
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     if handler.is_port_forward() {
+        handler.lc.write().unwrap().port_forward_mux = crate::port_forward::mux_enabled();
         if handler.is_rdp() {
             let port = handler
                 .get_option("rdp_port".to_owned())
