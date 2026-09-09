@@ -1717,7 +1717,7 @@ dependencies = [
 [[package]]
 name = "cpal"
 version = "0.15.3"
-source = "git+https://github.com/rustdesk-org/cpal?branch=osx-screencapturekit#6b374bcaed076750ca8fce6da518ab39b882e14a"
+source = "git+https://github.com/rustdesk-org/cpal?branch=osx-screencapturekit#41c8a2a75903ffe9cd44cf176ce6b69e5d916d47"
 dependencies = [
  "alsa",
  "cidre",
@@ -9731,7 +9731,7 @@ dependencies = [
 [[package]]
 name = "webrtc-sctp"
 version = "0.12.0"
-source = "git+https://github.com/rustdesk-org/webrtc?rev=b221f13b1d6f21fbce09f9f63096be27dd392265#b221f13b1d6f21fbce09f9f63096be27dd392265"
+source = "git+https://github.com/rustdesk-org/webrtc?rev=db3b07a9dd8f195916c89c2e62a8911402b11d27#db3b07a9dd8f195916c89c2e62a8911402b11d27"
 dependencies = [
  "arc-swap",
  "async-trait",
@@ -9771,7 +9771,7 @@ dependencies = [
 [[package]]
 name = "webrtc-util"
 version = "0.11.0"
-source = "git+https://github.com/rustdesk-org/webrtc?rev=b221f13b1d6f21fbce09f9f63096be27dd392265#b221f13b1d6f21fbce09f9f63096be27dd392265"
+source = "git+https://github.com/rustdesk-org/webrtc?rev=db3b07a9dd8f195916c89c2e62a8911402b11d27#db3b07a9dd8f195916c89c2e62a8911402b11d27"
 dependencies = [
  "async-trait",
  "bitflags 1.3.2",
